@@ -1,32 +1,28 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const app = express();
 
-const PORT = 3000;
+app.use(cors());
+app.use(express.json());
 
-const server = http.createServer((req, res) => {
-    // Check if the user is looking for the home page
-    if (req.url === '/' || req.url === '/index.html') {
-        const filePath = path.join(__dirname, 'index.html');
-        
-        // Read the HTML file and serve it
-        fs.readFile(filePath, (err, content) => {
-            if (err) {
-                res.writeHead(500, { 'Content-Type': 'text/plain' });
-                res.end('Error loading the page');
-            } else {
-                res.writeHead(200, { 'Content-Type': 'text/html' });
-                res.end(content);
-            }
-        });
-    } else {
-        // Handle 404 Not Found
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('404 Page Not Found');
-    }
+mongoose.connect("mongodb+srv://Nishant24:Nishant24@cluster0.p8gywnu.mongodb.net/");
+
+const User = mongoose.model("User", {
+  name: String
 });
 
-// Start the server
-server.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+app.post("/users", async (req, res) => {
+  const user = new User({ name: req.body.name });
+  await user.save();
+  res.send(user);
+});
+
+app.get("/users", async (req, res) => {
+  const users = await User.find();
+  res.send(users);
+});
+
+app.listen(3000, () => {
+  console.log("Server running on 3000");
 });
